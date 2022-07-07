@@ -15,12 +15,15 @@ namespace API.Entities
         public string Description { get; set; }
 
         [Column(TypeName="Date")]
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; }       
+
+        public string timelineStatus { get; set; }
 
         public int BidId { get; set; }
 
         public Bid Bid { get; set; }
 
+        public ICollection<TimelineNotes> TimelineNotes { get; set; }
         
     }
 }

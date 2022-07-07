@@ -13,6 +13,9 @@ namespace API.DTOs.UpdateDTO
 
         public string Description { get; set; }
 
+        public string timelineStatus { get; set; }
+
+        public string timelineNotes { get; set; }
         
         public DateTime Date { get; set; }
        

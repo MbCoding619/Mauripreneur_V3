@@ -13,6 +13,10 @@ namespace API.DTOs.AutoDTO
 
         public string Description { get; set; }
 
+        public string timelineNotes { get; set; }
+
+        public string timelineStatus { get; set; }
+
         public DateTime Date { get; set; }
 
         public int BidId { get; set; }

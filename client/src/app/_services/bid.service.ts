@@ -203,4 +203,28 @@ export class BidService {
   getTimelineNotes(timelineId :any){
     return this.http.get<timelineNotesQuery>(`${this.baseUrl}bid/getTimelineNotes/${timelineId}`);
   }
+
+  editTimelineNotes(model :any){
+    return this.http.put(this.baseUrl+'bid/editTimelineNotes',model).pipe(
+      map((response : ActionStatus)=>{
+        if(response){
+          return response;
+        }
+      },error =>{
+        this.toastr.error(error.error);
+      })
+    )
+  }
+
+  deleteTimelineNotes(timelineId){
+    return this.http.delete(this.baseUrl+`bid/deleteTimelineNotes/${timelineId}`).pipe(
+      map((response : ActionStatus)=>{
+        if(response){
+          return response;
+        }
+      },error =>{
+        this.toastr.error(error.error);
+      })
+    )
+  }
 }

@@ -42,7 +42,9 @@ namespace API.Entities
 
         public ICollection<Experience> Experience { get; set; }
 
-        public ICollection<Qualification> Qualification { get; set; }           
+        public ICollection<Qualification> Qualification { get; set; } 
+
+        public ICollection<TimelineNotes> TimelineNotes { get; set; }           
 
 
 

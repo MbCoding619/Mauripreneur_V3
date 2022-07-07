@@ -40,6 +40,8 @@ namespace API.Entities
 
         public ICollection<Bid> Bid { get; set; }
 
+        public ICollection<TimelineNotes> TimelineNotes { get; set; }
+
        
 
     }

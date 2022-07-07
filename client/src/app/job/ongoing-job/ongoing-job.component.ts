@@ -28,7 +28,7 @@ export class OngoingJobComponent implements OnInit {
   timelineNotesData : timelineNotesQuery;
   modelT : any;
   modetlTimelineNotes:any;
-  timlineId : any;
+  timlineNoteId : any;
   p =1;
   showTimelineNotes =false;
   updateNote =false;
@@ -149,6 +149,44 @@ export class OngoingJobComponent implements OnInit {
     this.notesForm = this.fb.group({
       notes : new FormControl('',Validators.required)
     })
+  }
+  showEditTimelineNotes(timelineNote : timelineNotesQuery){
+    this.updateNote = true;
+    this.timlineNoteId = timelineNote.timelineNotesId;
+    console.log(this.timlineNoteId);
+    this.notesForm.patchValue({
+      notes : timelineNote.notes
+    })
+  }
+
+  editTimelineNotes(){
+    this.modetlTimelineNotes ={
+      "timelineNotesId" : this.timlineNoteId,
+      "timelineNotes" : this.notesForm.controls["notes"]?.value
+    }
+    this.bidService.editTimelineNotes(this.modetlTimelineNotes).subscribe(
+      response =>{
+        if(response){
+          this.toastr.success(response.status);
+          this.getTimelineNotes(this.timelineNotesData[0].timelineId);
+        }
+      },error =>{
+        this.toastr.error("Something went wrong");
+      }
+    )
+  }
+
+  deleteTimelineNote(){
+    this.bidService.deleteTimelineNotes(this.timlineNoteId).subscribe(
+      response =>{
+        if(response){
+          this.toastr.success(response.status);
+          this.getTimelineNotes(this.timelineNotesData[0].timelineId);
+        }
+      },error =>{
+        this.toastr.error("Something went wrong");
+      }
+    )
   }
 
   test(){
