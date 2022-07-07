@@ -7,6 +7,7 @@ using API.DTOs;
 using API.DTOs.AutoDTO;
 using API.DTOs.UpdateDTO;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +20,10 @@ namespace API.Controllers
         private readonly IBidRepository _bidRepository;
         private readonly IMapper _mapper;
         private readonly DataContext _context;
-        public BidController(DataContext context, IMapper mapper, IBidRepository bidRepository)
+        private readonly IUserRepository _userRepository;
+        public BidController(DataContext context, IMapper mapper, IBidRepository bidRepository, IUserRepository userRepository)
         {
+            _userRepository = userRepository;
             _context = context;
             _mapper = mapper;
             _bidRepository = bidRepository;
@@ -82,17 +85,18 @@ namespace API.Controllers
         public async Task<ActionResult<BidReponseDTO>> addBidDetails(BidAddDTO bidAddDTO)
         {
             var bid = await _bidRepository.GetBidByIdAsync(bidAddDTO.BidId);
-            if(bid !=null)
+            if (bid != null)
             {
                 bid.BidAmount = bidAddDTO.BidAmount;
                 bid.Description = bidAddDTO.Description;
                 bid.OtherDetails = bidAddDTO.OtherDetails;
-                 _bidRepository.Update(bid);
-                 return new BidReponseDTO
-                 {
-                    Status ="Details Added"
-                 };
-            }else
+                _bidRepository.Update(bid);
+                return new BidReponseDTO
+                {
+                    Status = "Details Added"
+                };
+            }
+            else
             {
                 return BadRequest();
             }
@@ -158,30 +162,33 @@ namespace API.Controllers
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == bidAcceptDTO.username.ToLower());
             var bid = await _bidRepository.GetBidByIdAsync(bidAcceptDTO.bidId);
             var sme = await _context.Sme.SingleOrDefaultAsync(s => s.AppUserId == user.AppUserId);
-            if (user != null )
+            if (user != null)
             {
-                if(bid.BidResponse !="INTERESTED")
+                if (bid.BidResponse != "INTERESTED")
                 {
-                    return new ActionStatusDTO{
+                    return new ActionStatusDTO
+                    {
                         status = "Already Accepted/Declined bid"
                     };
-                }else
-                {
-
-                bid.BidResponse = "Accepted";
-                bid.SmeId = sme.Id;
-                _bidRepository.Update(bid);
-
-                var bidlist = await _context.Bid.Where(bd => bd.JobId == bid.JobId && bd.BidResponse != "Accepted" ).ToListAsync();
-                foreach(Bid bids in bidlist)
-                {
-                    bids.BidResponse = "DECLINED";
-                    _bidRepository.Update(bids);
                 }
+                else
+                {
 
-                return new ActionStatusDTO{
-                    status ="Bid Accepted"
-                };
+                    bid.BidResponse = "Accepted";
+                    bid.SmeId = sme.Id;
+                    _bidRepository.Update(bid);
+
+                    var bidlist = await _context.Bid.Where(bd => bd.JobId == bid.JobId && bd.BidResponse != "Accepted").ToListAsync();
+                    foreach (Bid bids in bidlist)
+                    {
+                        bids.BidResponse = "DECLINED";
+                        _bidRepository.Update(bids);
+                    }
+
+                    return new ActionStatusDTO
+                    {
+                        status = "Bid Accepted"
+                    };
                 }
 
             }
@@ -199,20 +206,21 @@ namespace API.Controllers
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == bidAcceptDTO.username.ToLower());
             var bid = await _bidRepository.GetBidByIdAsync(bidAcceptDTO.bidId);
             var sme = await _context.Sme.SingleOrDefaultAsync(s => s.AppUserId == user.AppUserId);
-            if (user != null )
+            if (user != null)
             {
-                if(bid.BidResponse !="INTERESTED")
+                if (bid.BidResponse != "INTERESTED")
                 {
                     return Ok("Already Approve/Decline bid");
-                }else
+                }
+                else
                 {
 
-                bid.BidResponse = "DECLINED";
-                bid.SmeId = sme.Id;
-                _bidRepository.Update(bid);
-             
+                    bid.BidResponse = "DECLINED";
+                    bid.SmeId = sme.Id;
+                    _bidRepository.Update(bid);
 
-                return Ok("Bid Accepted");
+
+                    return Ok("Bid Accepted");
                 }
 
             }
@@ -249,6 +257,23 @@ namespace API.Controllers
 
             return Ok(bidToReturn);
 
+        }
+
+        [HttpGet("checkBidStatus/{jobId}")]
+
+        public async Task<ActionResult<IEnumerable<ATBidDTO>>> checkBidStatus(int jobId)
+        {
+            var bid = await _context.Bid.Where(bd => bd.JobId == jobId).Where(bd =>bd.BidResponse == "DECLINED" || bd.BidResponse == "Accepted").ToListAsync();
+
+            if(bid != null)
+            {
+                var bids = _mapper.Map<IEnumerable<ATBidDTO>>(bid);
+                return Ok(bids);
+            }
+            else
+            {
+                return BadRequest("No Bid Found");
+            }
         }
 
         [HttpGet("getBidAccepted/{username}")]
@@ -316,7 +341,7 @@ namespace API.Controllers
         }
 
         [HttpGet("getBidSent/{username}/{bidStatus}")]
-        public async Task<ActionResult> queryBidSentByStatus(string username,string bidStatus)
+        public async Task<ActionResult> queryBidSentByStatus(string username, string bidStatus)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.UserName == username);
             var prof = await _context.Professionals.SingleOrDefaultAsync(s => s.AppUserId == user.AppUserId);
@@ -499,7 +524,134 @@ namespace API.Controllers
             }
         }
 
+        [HttpPut("setTimelineStatus")]
 
+        public async Task<ActionResult<ActionStatusDTO>> setTimelineStatus(TimelineStatusUpdateDTO timelineStatusUpdateDTO)
+        {
+            var timeline = await _context.Timeline.FindAsync(timelineStatusUpdateDTO.timelineId);
+            if (timeline != null)
+            {
+                _mapper.Map(timelineStatusUpdateDTO, timeline);
+                _context.Entry(timeline).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return new ActionStatusDTO{
+                    status ="Timeline Status Changed"
+                };
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost("addTimelineNotes")]
+
+        public async Task<ActionResult<ActionStatusDTO>> addTimelineNotes(TimelineNotesDTO timelineNotesDTO)
+        {
+            var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+
+            var timelineNote = new TimelineNotes();
+            if(user !=null)
+            {
+                if(user.AppUserRole == "SME")
+                {
+                    var sme = await _context.Sme.SingleOrDefaultAsync(sm => sm.AppUserId == user.AppUserId);
+                    timelineNote = new TimelineNotes{
+
+                        Notes = timelineNotesDTO.Notes,
+                        TimelineId = timelineNotesDTO.TimelineId,
+                        SmeId = sme.Id
+                    };
+
+                    _context.TimelineNotes.Add(timelineNote);
+                }else if(user.AppUserRole =="PROFESSIONAL")
+                {
+                    var prof = await _context.Professionals.SingleOrDefaultAsync(prof => prof.AppUserId == user.AppUserId);
+                        timelineNote = new TimelineNotes{
+
+                        Notes = timelineNotesDTO.Notes,
+                        TimelineId = timelineNotesDTO.TimelineId,
+                        ProfessionalId = prof.Id
+                    };
+
+                    _context.TimelineNotes.Add(timelineNote);
+                }else{
+                    return BadRequest();
+                }
+            }else{
+                return BadRequest();
+            }
+            await _context.SaveChangesAsync();
+            return new ActionStatusDTO
+            {
+                status ="Notes Added"
+            };
+        }
+
+        [HttpPut("editTimelineNotes")]
+
+        public async Task<ActionResult<ActionStatusDTO>> editTimelineNotes(TimelineNotesUpdateDTO timelineNotesUpdateDTO)
+        {
+            var timelineNote = await _context.TimelineNotes.FindAsync(timelineNotesUpdateDTO.timelineNotesId);
+            if (timelineNote != null)
+            {
+                timelineNote.Notes = timelineNotesUpdateDTO.timelineNotes;
+                _context.Entry(timelineNote).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return new ActionStatusDTO{
+                    status ="Note edited"
+                };
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpDelete("deleteTimelineNotes/{timelineNoteId}")]
+
+        public async Task<ActionResult<ActionStatusDTO>> deleteTimelineNotes(int timelineNoteId)
+        {
+            var timelineNote = await _context.TimelineNotes.FindAsync(timelineNoteId);
+            if (timelineNote != null)
+            {
+                _context.TimelineNotes.Remove(timelineNote);
+                await _context.SaveChangesAsync();
+                return new ActionStatusDTO{
+                    status = "Note deleted"
+                };
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("getTimelineNotes/{timelineId}")]
+        public IActionResult getTimelineNotes(int timelineId)
+        {   
+
+            var query = _context.TimelineNotes
+                        .Join(
+                            _context.Timeline,
+                            tmnLN => tmnLN.TimelineId,
+                            tmnL => tmnL.TimelineId,
+                            (tmnLN,tmnL) => new
+                            {
+                                timelineNotesId = tmnLN.TimelineNotesId,
+                                timelineId = tmnL.TimelineId,
+                                Notes = tmnLN.Notes,
+                                imgPathS=  tmnLN.Sme.User.imagePath,
+                                imgPathP = tmnLN.Professional.User.imagePath
+
+                            }
+                        ).Where(tm => tm.timelineId == timelineId).ToList();
+
+
+                       return Ok(query);
+        }    
         [HttpGet("getBidProfByJobId/{jobId}/{bidResponse}")]
 
         public IActionResult getBidProfBySmeId(int jobId, string bidResponse)
@@ -577,9 +729,9 @@ namespace API.Controllers
                     ProfName = bid.ProfName,
                     ProfDesc = bid.ProfDesc,
                     ProfAppId = bid.ProfAppId,
-                                //Below is implemented to get the ImagePath
-                                //This Branch does not have the image Functionality
-                                //implemented.
+                    //Below is implemented to get the ImagePath
+                    //This Branch does not have the image Functionality
+                    //implemented.
                     ProfPic = appUser.imagePath
 
                 }
@@ -668,22 +820,22 @@ namespace API.Controllers
                     ProfName = bid.ProfName,
                     ProfDesc = bid.ProfDesc,
                     ProfAppId = bid.ProfAppId,
-                                //Below is implemented to get the ImagePath
-                                //This Branch does not have the image Functionality
-                                //implemented.
+                    //Below is implemented to get the ImagePath
+                    //This Branch does not have the image Functionality
+                    //implemented.
                     ProfPic = appUser.imagePath
 
                 }
             )
-            .Where(jb => jb.JobId == jobId)            
+            .Where(jb => jb.JobId == jobId)
             .ToList();
 
             return Ok(query);
         }
 
-        [HttpGet("getJobBidProfMeetBySmeId/{jobId}/{bidResponse}")]
+        [HttpGet("getJobBidProfByBidResponse/{bidResponse}")]
 
-        public IActionResult getJobBidProfMeetBySmeId(int jobId, string bidResponse)
+        public IActionResult getJobBidProfMeetBySmeId( string bidResponse)
         {
             var query = _context.Job
                         .Join(
@@ -726,7 +878,8 @@ namespace API.Controllers
                                 ProfFName = prof.FName,
                                 ProfLName = prof.LName,
                                 ProfSocials = prof.LinkedInLink,
-                                ProfAppId = prof.AppUserId
+                                ProfAppId = prof.AppUserId,
+                                field = prof.Field
                             }
                         ).Join(
                             _context.Users,
@@ -748,11 +901,11 @@ namespace API.Controllers
                                 timeline = prof.timeline,
                                 ProfFName = prof.ProfFName,
                                 ProfLName = prof.ProfLName,
-                                ProfSocials = prof.ProfSocials,
-                                ProfAppId = prof.ProfAppId,
-                                ProfPic = appUser.imagePath
+                                ProfSocials = prof.ProfSocials,   
+                                ProfPic = appUser.imagePath,
+                                Field = prof.field
                             }
-                        ).Where(jb => jb.JobId == jobId).Where(bd => bd.BidResponse == bidResponse).ToList();
+                        ).Where(bd => bd.BidResponse == bidResponse).ToList();
 
 
             return Ok(query);
