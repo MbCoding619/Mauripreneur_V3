@@ -44,26 +44,33 @@
       <mat-icon>view_list</mat-icon>
       <span>Project Posted</span>
     </button>
+    <button routerLink="/Job/OngoingJob" mat-menu-item>
+      <mat-icon>wysiwyg</mat-icon>
+      <span>Ongoing Job</span>
+    </button>
   </ng-container>
   <button  routerLink="/Job/AllJob"  mat-menu-item>
     <mat-icon>dns</mat-icon>
     <span>All Projects</span>
   </button>
 </mat-menu>
-  <button mat-button class="menu-button" [matMenuTriggerFor]="bidsMenu">
-    <mat-icon>table_chart</mat-icon>
-    <span>Bids</span>    
-  </button>
-  <mat-menu #bidsMenu="matMenu">
-    <button routerLink="/Bid/BidSent" mat-menu-item>
-      <mat-icon>show_chart</mat-icon>
-      <span>Bid Sent</span>
+  <ng-container *ngIf="(acountService.currentUser$| async).appUserRole =='PROFESSIONAL'" >
+    <button mat-button class="menu-button" [matMenuTriggerFor]="bidsMenu">
+      <mat-icon>table_chart</mat-icon>
+      <span>Bids</span>    
     </button>
-    <button mat-menu-item>
-      <mat-icon>contact_mail</mat-icon>
-      <span>Ongoing Bid</span>
-    </button>
-  </mat-menu>
+    <mat-menu #bidsMenu="matMenu">
+      <button routerLink="/Bid/BidSent" mat-menu-item>
+        <mat-icon>show_chart</mat-icon>
+        <span>Bid Sent</span>
+      </button>
+      <button mat-menu-item>
+        <mat-icon>contact_mail</mat-icon>
+        <span>Ongoing Bid</span>
+      </button>
+    </mat-menu>
+  </ng-container>
+
   <button routerLink="/Calendar/ViewCalendar" mat-button class="menu-button">
       <mat-icon>calendar_month</mat-icon>
       <span>Calendar</span>

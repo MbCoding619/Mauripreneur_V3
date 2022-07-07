@@ -85,6 +85,8 @@ import { DialogJobPostedComponent } from './dialog/dialog-job-posted/dialog-job-
 import { AccordionModule } from 'ngx-bootstrap/accordion';
 import { PostedJobCardsComponent } from './cards/posted-job-cards/posted-job-cards.component';
 import { TestTimelineComponent } from './_tests/test-timeline/test-timeline.component';
+import { OngoingJobComponent } from './job/ongoing-job/ongoing-job.component';
+import { DialogTimelineNotesComponent } from './dialog/dialog-timeline-notes/dialog-timeline-notes.component';
 
 
 
@@ -141,6 +143,8 @@ import { TestTimelineComponent } from './_tests/test-timeline/test-timeline.comp
     DialogJobPostedComponent,
     PostedJobCardsComponent,
     TestTimelineComponent,
+    OngoingJobComponent,
+    DialogTimelineNotesComponent,
       
   ],
   imports: [

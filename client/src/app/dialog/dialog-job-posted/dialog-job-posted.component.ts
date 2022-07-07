@@ -150,7 +150,7 @@ export class DialogJobPostedComponent implements OnInit {
         this.dataSource = new MatTableDataSource(job);
         //this.dataSource.sort = this.sort;
         this.dataSource.paginator = this.paginator;
-        console.log(job[0].startDate);
+        //console.log(job[0].startDate);
       }, error => {
 
         this.toastr.error(error.error);

@@ -6,9 +6,12 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { ActionStatus } from '../_models/ActionStatus';
 import { addBid } from '../_models/addBid';
+import { Bid } from '../_models/Bid';
 import { bidProfCard } from '../_models/bidProfCard';
 import { jobDetails } from '../_models/jobDetails';
+import { ongoingJob } from '../_models/ongoingJob';
 import { timeline } from '../_models/timeline';
+import { timelineNotesQuery } from '../_models/timelineNotesQuery';
 
 @Injectable({
   providedIn: 'root'
@@ -165,4 +168,39 @@ export class BidService {
     )
   }
 
+  checkBidStatus(jobId : any){
+    return this.http.get<Bid>(`${this.baseUrl}bid/checkBidStatus/${jobId}`);
+  }
+
+  getOngoingJob(bidResponse : any){
+    return this.http.get<ongoingJob[]>(`${this.baseUrl}bid/getJobBidProfByBidResponse/${bidResponse}`);
+  }
+
+  setTimelineStatus(model : any){
+    return this.http.put(this.baseUrl+'bid/setTimelineStatus',model).pipe(
+      map((response : ActionStatus)=>{
+        if(response){
+          return response;
+        }
+      },error =>{
+        this.toastr.error(error.error);
+      })
+    )
+  }
+
+  insertTimelineNotes(model : any){
+    return this.http.post(this.baseUrl+'bid/addTimelineNotes',model).pipe(
+      map((status : ActionStatus)=>{
+        if(status){
+          return(status);
+        }
+      },error =>{
+        this.toastr.error(error.error);
+      })
+    )
+  }
+
+  getTimelineNotes(timelineId :any){
+    return this.http.get<timelineNotesQuery>(`${this.baseUrl}bid/getTimelineNotes/${timelineId}`);
+  }
 }

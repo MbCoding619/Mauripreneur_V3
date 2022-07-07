@@ -1,0 +1,350 @@
+<section id="breadcrumbs" class="breadcrumbs">
+    <div class="container">
+
+        <ol>
+            <li><a routerLink="/">Home</a></li>
+            <li>Project</li>
+        </ol>
+        <h2>Ongoing Project <ng-container *ngIf="viewJob">/ {{jobData.jobTitle}}</ng-container>
+        </h2>
+
+    </div>
+</section><!-- End Breadcrumbs -->
+
+
+
+
+
+
+<div *ngIf="!viewJob" class="container">
+    <div class="mat-elevation-z8 table-parent">
+        <mat-form-field style="text-align:center; font-size: 150%;" appearance="standard">
+            <mat-label>Search</mat-label>
+            <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Website design" #input>
+        </mat-form-field>
+        <div class="mat-elevation-z8">
+            <table mat-table [dataSource]="dataSource">
+
+                <!-- profPic Column -->
+                <ng-container matColumnDef="profPic">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <mat-icon>photo_camera</mat-icon>
+                    </th>
+                    <td mat-cell *matCellDef="let element"> <img [src]="createImgPath(element.profPic)"
+                            style="width:50px;height:60px;"> </td>
+                </ng-container>
+
+                <!-- Name Column -->
+                <ng-container matColumnDef="profFName">
+                    <th mat-header-cell *matHeaderCellDef> Name </th>
+                    <td mat-cell *matCellDef="let element"> {{element.profFName}} </td>
+                </ng-container>
+
+                <!-- jobTitleColumn -->
+                <ng-container matColumnDef="jobTitle">
+                    <th mat-header-cell *matHeaderCellDef> Project Title </th>
+                    <td mat-cell *matCellDef="let element"> {{element.jobTitle}} </td>
+                </ng-container>
+                <!-- jobDescription Column -->
+                <ng-container matColumnDef="jobDescription">
+                    <th mat-header-cell *matHeaderCellDef> Description </th>
+                    <td mat-cell *matCellDef="let element"> {{element.jobDescription}} </td>
+                </ng-container>
+                <!-- bidResponse Column -->
+                <ng-container matColumnDef="bidResponse">
+                    <th mat-header-cell *matHeaderCellDef> Bid Status </th>
+                    <td mat-cell *matCellDef="let element"> {{element.bidResponse}} </td>
+                </ng-container>
+
+                <!-- Action Column -->
+                <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef> View </th>
+                    <td mat-cell *matCellDef="let element">
+                        <mat-icon (click)="showJobDetails(element)">visibility</mat-icon>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+                aria-label="Select page of periodic elements">
+            </mat-paginator>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+<div *ngIf="viewJob" class="row">
+    <div class="col-md-2">
+        <div class="card user-card">
+            <div class="card-header" style="cursor: pointer;">
+                <mat-icon (click)="back()">arrow_back_ios</mat-icon>
+            </div>
+            <div class="card-block">
+                <div class="user-image">
+                    <img [src]="createImgPath(jobData.profPic)" class="img-radius" alt={{jobData.profFName}}>
+                </div>
+                <h6 style="color:black !important;" class="f-w-600 m-t-25 m-b-10">{{jobData.field.description}}</h6>
+                <p class="text-muted">{{jobData.profFName}} | {{jobData.profLName}}</p>
+                <hr>
+                <div class="bg-c-blue counter-block m-t-10 p-20">
+                    <div class="row">
+                        <p>{{jobData.jobDescription}}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row justify-content-center user-social-link">
+                    <qr-code [qrdata]="'myAngularxQrCode'" [size]="140"></qr-code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-10">
+        <tabset>
+
+            <tab heading="Timeline">
+                <div class="container" style="overflow: scroll;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="timeline-body">
+                                    <div id="content" *ngFor="let timeline of timelineData">
+                                        <ng-container *ngIf="timeline.timelineStatus =='ONGOING'">
+                                            <ul class="timeline">
+                                                <li class="event" attr.data-date="{{timeline.date | date}}">
+                                                    <h3>{{timeline.title}}</h3>
+                                                    <p>{{timeline.description}}.</p>
+                                                    <button mat-icon-button class="menu-button"
+                                                        [matMenuTriggerFor]="bidsMenu">
+                                                        <mat-icon>more</mat-icon>
+                                                    </button>
+                                                    <mat-menu #bidsMenu="matMenu">
+                                                        <button (click)="getTimelineNotes(timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>speaker_notes</mat-icon>
+                                                            <span>Notes</span>
+                                                        </button>
+                                                        <button (click)="setTimelineStatus('DONE',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>check_circle</mat-icon>
+                                                            <span>Mark as Done</span>
+                                                        </button>
+                                                        <button
+                                                            (click)="setTimelineStatus('PENDING',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>pending_actions</mat-icon>
+                                                            <span>Mark as Pending</span>
+                                                        </button>
+                                                        <button
+                                                            (click)="setTimelineStatus('ISSUES',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>error</mat-icon>
+                                                            <span>Mark as Issues</span>
+                                                        </button>
+                                                    </mat-menu>
+                                                </li>
+                                            </ul>
+                                        </ng-container>
+                                        <ng-container *ngIf="timeline.timelineStatus =='ISSUES'">
+                                            <ul class="timeline issues">
+                                                <li class="event" attr.data-date="{{timeline.date | date}}">
+                                                    <h3>{{timeline.title}}</h3>
+                                                    <p>{{timeline.description}}.</p>
+                                                    <button mat-icon-button class="menu-button"
+                                                        [matMenuTriggerFor]="bidsMenu">
+                                                        <mat-icon>more</mat-icon>
+                                                    </button>
+                                                    <mat-menu #bidsMenu="matMenu">
+                                                        <button (click)="getTimelineNotes(timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>speaker_notes</mat-icon>
+                                                            <span>Notes</span>
+                                                        </button>
+                                                        <button (click)="setTimelineStatus('DONE',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>check_circle</mat-icon>
+                                                            <span>Mark as Done</span>
+                                                        </button>
+                                                        <button
+                                                            (click)="setTimelineStatus('PENDING',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>pending_actions</mat-icon>
+                                                            <span>Mark as Pending</span>
+                                                        </button>
+                                                        <button
+                                                            (click)="setTimelineStatus('ISSUES',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>error</mat-icon>
+                                                            <span>Mark as Issues</span>
+                                                        </button>
+                                                    </mat-menu>
+                                                </li>
+                                            </ul>
+                                        </ng-container>
+                                        <ng-container *ngIf="timeline.timelineStatus =='PENDING'">
+                                            <ul class="timeline pending">
+                                                <li class="event" attr.data-date="{{timeline.date | date}}">
+                                                    <h3>{{timeline.title}}</h3>
+                                                    <p>{{timeline.description}}.</p>
+                                                    <button mat-icon-button class="menu-button"
+                                                        [matMenuTriggerFor]="bidsMenu">
+                                                        <mat-icon>more</mat-icon>
+                                                    </button>
+                                                    <mat-menu #bidsMenu="matMenu">
+                                                        <button (click)="getTimelineNotes(timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>speaker_notes</mat-icon>
+                                                            <span> Notes</span>
+                                                        </button>
+                                                        <button (click)="setTimelineStatus('DONE',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>check_circle</mat-icon>
+                                                            <span>Mark as Done</span>
+                                                        </button>
+                                                        <button
+                                                            (click)="setTimelineStatus('PENDING',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>pending_actions</mat-icon>
+                                                            <span>Mark as Pending</span>
+                                                        </button>
+                                                        <button
+                                                            (click)="setTimelineStatus('ISSUES',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>error</mat-icon>
+                                                            <span>Mark as Issues</span>
+                                                        </button>
+                                                    </mat-menu>
+                                                </li>
+                                            </ul>
+                                        </ng-container>
+                                        <ng-container *ngIf="timeline.timelineStatus =='DONE'">
+                                            <ul class="timeline done">
+                                                <li class="event" attr.data-date="{{timeline.date | date}}">
+                                                    <h3>{{timeline.title}}</h3>
+                                                    <p>{{timeline.description}}.</p>
+                                                    <button mat-icon-button class="menu-button"
+                                                        [matMenuTriggerFor]="bidsMenu">
+                                                        <mat-icon>more</mat-icon>
+                                                    </button>
+                                                    <mat-menu #bidsMenu="matMenu">
+                                                        <button (click)="getTimelineNotes(timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>speaker_notes</mat-icon>
+                                                            <span>Notes</span>
+                                                        </button>
+                                                        <button (click)="setTimelineStatus('DONE',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>check_circle</mat-icon>
+                                                            <span>Mark as Done</span>
+                                                        </button>
+                                                        <button
+                                                            (click)="setTimelineStatus('PENDING',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>pending_actions</mat-icon>
+                                                            <span>Mark as Pending</span>
+                                                        </button>
+                                                        <button
+                                                            (click)="setTimelineStatus('ISSUES',timeline.timelineId)"
+                                                            mat-menu-item>
+                                                            <mat-icon>error</mat-icon>
+                                                            <span>Mark as Issues</span>
+                                                        </button>
+                                                    </mat-menu>
+                                                </li>
+                                            </ul>
+                                        </ng-container>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="showTimelineNotes" class="col-md-6 mt-2">
+                            <div class="card-header" style="cursor: pointer;">
+                                <mat-icon (click)="back2()">arrow_back_ios</mat-icon>
+                            </div>
+                            <div class="card mb-3" *ngFor="let timeline of timelineNotesData | paginate: { itemsPerPage: 3, currentPage: p }
+                            ">
+                                <div class="card-body">
+                                    <div class="d-flex flex-column flex-lg-row">
+                                        <span class="avatar img-radius rounded-3 me-4 mb-2">
+                                            <img *ngIf="timeline.imgPathS" [src]="createImgPath(timeline.imgPathS)"
+                                                alt="">
+                                            <img *ngIf="timeline.imgPathP" [src]="createImgPath(timeline.imgPathP)"
+                                                alt="">
+                                        </span>
+                                        <div class="row flex-fill">
+                                            <div class="col-sm-9">
+                                                <h4 style="color:black!important;" class="h5">{{timeline.notes}}</h4>
+                                            </div>
+                                            <div class="col-sm-3 text-lg-end">
+                                                <a class="btn btn-primary stretched-link">
+                                                    <mat-icon>edit</mat-icon>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <pagination-controls (pageChange)="p = $event"></pagination-controls>
+                            </div>
+
+                            <div class="col-md-12 mt-3">
+                                <div style="font-family: 'Times New Roman', Times, serif; font-weight:bold;"
+                                    class="d-flex justify-content-center mb-3">
+                                    <button (click)="addTimelineNotes()" *ngIf="!updateNote" mat-button>
+                                        <mat-icon>sticky_note_2</mat-icon>
+                                        <span>Insert note</span>
+                                    </button>
+                                    <button *ngIf="updateNote" mat-button>
+                                        <mat-icon>sticky_note_2</mat-icon>
+                                        <span>Update note</span>
+                                    </button>
+                                </div>
+                                <form [formGroup]="notesForm">
+                                    <mat-form-field class="example-full-width" appearance="fill">
+                                        <mat-label>Insert Note</mat-label>
+                                        <textarea formControlName="notes" matInput
+                                            placeholder="This deliverables is stastfying"></textarea>
+                                    </mat-form-field>
+                                </form>
+                            </div>
+
+                        </div>
+
+                        <div *ngIf="!showTimelineNotes" class="col-md-6">
+                            <img style='height: 100%; width: 100%; object-fit: contain' src="/assets/timeline.jpg"
+                                alt="">
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </tab>
+
+            <tab heading="Meeting ">
+                <div class="row">
+
+                    <h1>Meeting Goes here</h1>
+                </div>
+
+            </tab>
+
+
+            <tab heading="Payment">
+
+                <div class="container" style="color :black !important;">
+                    <h1>Payment Goes here</h1>
+                </div>
+            </tab>
+
+        </tabset>
+    </div>
+</div>

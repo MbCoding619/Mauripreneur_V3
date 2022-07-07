@@ -7,4 +7,6 @@ export interface Bid {
     jobId : string;
     professionalId : string;
     smeId : string;
+    bidScore: string;
+    bidNotes : string;
 }

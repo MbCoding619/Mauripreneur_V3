@@ -4,5 +4,7 @@ export interface timeline {
     description: string;
     date : Date;
     bidId : number;
+    timelineNotes : string;
+    timelineStatus : string;
 
 }

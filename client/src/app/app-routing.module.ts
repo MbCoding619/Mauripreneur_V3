@@ -16,6 +16,7 @@ import { TestErrorsComponent } from './errors/test-errors/test-errors.component'
 import { HomeComponent } from './home/home.component';
 import { AllJobPostedComponent } from './job/all-job-posted/all-job-posted.component';
 import { JobPostedComponent } from './job/job-posted/job-posted.component';
+import { OngoingJobComponent } from './job/ongoing-job/ongoing-job.component';
 import { PostJobComponent } from './job/post-job/post-job.component';
 import { MemberListComponent } from './members/member-list/member-list.component';
 import { UserMainProfileComponent } from './Profile/user-main-profile/user-main-profile.component';
@@ -40,6 +41,7 @@ const routes: Routes = [
   {path:'Job/PostJob',component: PostJobComponent},
   {path:'Job/JobPosted',component: JobPostedComponent},
   {path:'Job/AllJob',component: AllJobPostedComponent},
+  {path:'Job/OngoingJob',component: OngoingJobComponent},
   {path:'Calendar/ViewCalendar',component: CalendarViewComponent},
   {path:'User/UserProfile',component: UserProfileComponent},
   {path:'User/UserMainProfile',component: UserMainProfileComponent},

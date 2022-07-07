@@ -18,9 +18,9 @@
       <div class="container section-1">
 
         <accordion [closeOthers]="oneAtATime" [isAnimated]="true">
-          <accordion-group style="height:fit-content;" [isOpen]="isOpen" heading="Bid Approved">
+          <accordion-group style="height:fit-content;" [isOpen]="isOpen" heading="Pending Bids">
             <app-prof-bid-card [params]="jobData.id" (sendData)="getBidId($event)" (sendBidData)="getBidData($event)"
-              [bidResponse]="'Accepted'"> </app-prof-bid-card>
+              [bidResponse]="'PENDING'"> </app-prof-bid-card>
 
 
           </accordion-group>
@@ -47,11 +47,11 @@
           <tabset class="member-tabset">
             <!---Tab Bid Description-->
             <tab heading="Bid Details">
-              <div class="card mt-5" style="color:black !important;">
+              <div class="float-right" style="cursor: pointer; color:black !important;">
+                <mat-icon (click)="showAllBid()">view_column</mat-icon>
+              </div>
+              <div class="card mt-5" style="color:black !important;">                
                 <div *ngIf="!showAll" class="card-body">
-                  <div class="float-right" style="cursor: pointer; color:black !important;">
-                    <mat-icon (click)="showAllBid()">view_column</mat-icon>
-                  </div>
                   <div class="row">
                     <div class="col-sm-3">
                       <h5 class="mb-0">Date</h5>

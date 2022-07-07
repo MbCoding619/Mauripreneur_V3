@@ -3,7 +3,7 @@
         
                 <div class="card-content">
           
-                  <div class="card-subtitle">Bid Timeline </div>
+                  <div *ngIf="timelineL >0" class="card-subtitle">Bid Timeline </div>
           
                   <div *ngIf="timelineL >0" class="card-timeline">
           
@@ -24,7 +24,18 @@
                   </div>
 
                   <div *ngIf="timelineL === 0" class="d-flex justify-content-center">
-                    No timeline yet submitted
+                    <mat-card style="width:300px;" class="example-card">                      
+                      <mat-card-title>Timeline</mat-card-title>
+                      <mat-card-content>
+                        <p> No timeline yet submitted</p>
+                        
+                      </mat-card-content>
+                      <mat-divider inset></mat-divider>
+                      <mat-card-footer>
+                        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                      </mat-card-footer>
+                    </mat-card>
+                   
                   </div>
           
                 </div>

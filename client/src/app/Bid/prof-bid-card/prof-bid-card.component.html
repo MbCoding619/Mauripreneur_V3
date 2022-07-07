@@ -37,9 +37,14 @@
         
               <div class="card-social">
         
-                <a (click)="showTimelineTab(bidProf.bidId,bidProf)"><i class="fa fa-th-list lg" aria-hidden="true"></i></a>
-                <a (click)="acceptBid(bidProf)"><i class="fa fa-check-circle lg" aria-hidden="true"></i></a>
-                <a><i class="fa fa-times-circle" aria-hidden="true"></i></a>        
+                <a style="cursor: pointer;" (click)="showTimelineTab(bidProf.bidId,bidProf)"><i class="fa fa-th-list lg" aria-hidden="true"></i></a>
+                <ng-container *ngIf="checkBidL<= 0" >
+                  <a style="cursor: pointer;" (click)="acceptBid(bidProf)"><i class="fa fa-check-circle lg" aria-hidden="true"></i></a>
+
+                  <a style="cursor: pointer;"><i class="fa fa-times-circle" aria-hidden="true"></i></a> 
+                </ng-container>
+    
+
                 <a href="#">{{bidProf.bidScore}}/16</a>       
           
         
