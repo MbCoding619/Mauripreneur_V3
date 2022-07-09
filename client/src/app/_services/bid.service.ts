@@ -172,8 +172,8 @@ export class BidService {
     return this.http.get<Bid>(`${this.baseUrl}bid/checkBidStatus/${jobId}`);
   }
 
-  getOngoingJob(bidResponse : any){
-    return this.http.get<ongoingJob[]>(`${this.baseUrl}bid/getJobBidProfByBidResponse/${bidResponse}`);
+  getOngoingJob(bidResponse : any,username :any){
+    return this.http.get<ongoingJob[]>(`${this.baseUrl}bid/getJobBidProfByBidResponse/${bidResponse}/${username}`);
   }
 
   setTimelineStatus(model : any){
@@ -226,5 +226,9 @@ export class BidService {
         this.toastr.error(error.error);
       })
     )
+  }
+
+  checkTimelineDone(bidId :any){
+    return this.http.get<any>(`${this.baseUrl}bid/checkTimelineDoneForPay/${bidId}`);
   }
 }

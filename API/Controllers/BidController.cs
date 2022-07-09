@@ -263,9 +263,9 @@ namespace API.Controllers
 
         public async Task<ActionResult<IEnumerable<ATBidDTO>>> checkBidStatus(int jobId)
         {
-            var bid = await _context.Bid.Where(bd => bd.JobId == jobId).Where(bd =>bd.BidResponse == "DECLINED" || bd.BidResponse == "Accepted").ToListAsync();
+            var bid = await _context.Bid.Where(bd => bd.JobId == jobId).Where(bd => bd.BidResponse == "DECLINED" || bd.BidResponse == "Accepted").ToListAsync();
 
-            if(bid != null)
+            if (bid != null)
             {
                 var bids = _mapper.Map<IEnumerable<ATBidDTO>>(bid);
                 return Ok(bids);
@@ -535,8 +535,9 @@ namespace API.Controllers
                 _context.Entry(timeline).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
-                return new ActionStatusDTO{
-                    status ="Timeline Status Changed"
+                return new ActionStatusDTO
+                {
+                    status = "Timeline Status Changed"
                 };
             }
             else
@@ -552,12 +553,13 @@ namespace API.Controllers
             var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
 
             var timelineNote = new TimelineNotes();
-            if(user !=null)
+            if (user != null)
             {
-                if(user.AppUserRole == "SME")
+                if (user.AppUserRole == "SME")
                 {
                     var sme = await _context.Sme.SingleOrDefaultAsync(sm => sm.AppUserId == user.AppUserId);
-                    timelineNote = new TimelineNotes{
+                    timelineNote = new TimelineNotes
+                    {
 
                         Notes = timelineNotesDTO.Notes,
                         TimelineId = timelineNotesDTO.TimelineId,
@@ -565,10 +567,12 @@ namespace API.Controllers
                     };
 
                     _context.TimelineNotes.Add(timelineNote);
-                }else if(user.AppUserRole =="PROFESSIONAL")
+                }
+                else if (user.AppUserRole == "PROFESSIONAL")
                 {
                     var prof = await _context.Professionals.SingleOrDefaultAsync(prof => prof.AppUserId == user.AppUserId);
-                        timelineNote = new TimelineNotes{
+                    timelineNote = new TimelineNotes
+                    {
 
                         Notes = timelineNotesDTO.Notes,
                         TimelineId = timelineNotesDTO.TimelineId,
@@ -576,16 +580,20 @@ namespace API.Controllers
                     };
 
                     _context.TimelineNotes.Add(timelineNote);
-                }else{
+                }
+                else
+                {
                     return BadRequest();
                 }
-            }else{
+            }
+            else
+            {
                 return BadRequest();
             }
             await _context.SaveChangesAsync();
             return new ActionStatusDTO
             {
-                status ="Notes Added"
+                status = "Notes Added"
             };
         }
 
@@ -600,8 +608,9 @@ namespace API.Controllers
                 _context.Entry(timelineNote).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
-                return new ActionStatusDTO{
-                    status ="Note edited"
+                return new ActionStatusDTO
+                {
+                    status = "Note edited"
                 };
             }
             else
@@ -619,7 +628,8 @@ namespace API.Controllers
             {
                 _context.TimelineNotes.Remove(timelineNote);
                 await _context.SaveChangesAsync();
-                return new ActionStatusDTO{
+                return new ActionStatusDTO
+                {
                     status = "Note deleted"
                 };
             }
@@ -631,27 +641,47 @@ namespace API.Controllers
 
         [HttpGet("getTimelineNotes/{timelineId}")]
         public IActionResult getTimelineNotes(int timelineId)
-        {   
+        {
 
             var query = _context.TimelineNotes
                         .Join(
                             _context.Timeline,
                             tmnLN => tmnLN.TimelineId,
                             tmnL => tmnL.TimelineId,
-                            (tmnLN,tmnL) => new
+                            (tmnLN, tmnL) => new
                             {
                                 timelineNotesId = tmnLN.TimelineNotesId,
                                 timelineId = tmnL.TimelineId,
                                 Notes = tmnLN.Notes,
-                                imgPathS=  tmnLN.Sme.User.imagePath,
+                                imgPathS = tmnLN.Sme.User.imagePath,
                                 imgPathP = tmnLN.Professional.User.imagePath
 
                             }
                         ).Where(tm => tm.timelineId == timelineId).ToList();
 
 
-                       return Ok(query);
-        }    
+            return Ok(query);
+        }
+
+
+        [HttpGet("checkTimelineDoneForPay/{bidId}")]
+        public IActionResult checkTimelineDoneForPay(int bidId)
+        {
+
+            var count = _context.Timeline.Where(tm => tm.BidId == bidId).GroupBy(tm => tm.timelineStatus).Select
+            (
+                tm => new
+                {
+                    tmStatus = tm.Key,
+                    count = tm.Count()
+                }
+            );
+
+            return Ok(count);
+        }
+
+
+
         [HttpGet("getBidProfByJobId/{jobId}/{bidResponse}")]
 
         public IActionResult getBidProfBySmeId(int jobId, string bidResponse)
@@ -833,10 +863,12 @@ namespace API.Controllers
             return Ok(query);
         }
 
-        [HttpGet("getJobBidProfByBidResponse/{bidResponse}")]
+        [HttpGet("getJobBidProfByBidResponse/{bidResponse}/{username}")]
 
-        public IActionResult getJobBidProfMeetBySmeId( string bidResponse)
+        public IActionResult getJobBidProfMeetBySmeId(string bidResponse, string username)
         {
+
+            // var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
             var query = _context.Job
                         .Join(
                             _context.Bid,
@@ -855,6 +887,7 @@ namespace API.Controllers
                                 BidOtherDetails = bid.OtherDetails,
                                 ProfId = bid.ProfessionalId,
                                 SmeId = job.SmeId,
+                                user = job.Sme.User,
                                 timeline = bid.Timeline
                             }
                         ).Join(
@@ -874,6 +907,7 @@ namespace API.Controllers
                                 BidOtherDetails = bid.BidOtherDetails,
                                 ProfId = bid.ProfId,
                                 SmeId = bid.SmeId,
+                                user = bid.user,
                                 timeline = bid.timeline,
                                 ProfFName = prof.FName,
                                 ProfLName = prof.LName,
@@ -898,18 +932,21 @@ namespace API.Controllers
                                 BidOtherDetails = prof.BidOtherDetails,
                                 ProfId = prof.ProfId,
                                 SmeId = prof.SmeId,
+                                user = prof.user,
                                 timeline = prof.timeline,
                                 ProfFName = prof.ProfFName,
                                 ProfLName = prof.ProfLName,
-                                ProfSocials = prof.ProfSocials,   
+                                ProfSocials = prof.ProfSocials,
                                 ProfPic = appUser.imagePath,
                                 Field = prof.field
                             }
-                        ).Where(bd => bd.BidResponse == bidResponse).ToList();
+                        ).Where(bd => bd.user.UserName == username.ToLower())
+                        .Where(bd => bd.BidResponse == bidResponse).ToList();
 
 
             return Ok(query);
         }
+
 
 
 

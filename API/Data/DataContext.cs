@@ -49,7 +49,9 @@ namespace API.Data
 
         public DbSet<Experience> Experience {get; set;}
         
-        public DbSet<Skills> Skills {get; set;}        
+        public DbSet<Skills> Skills {get; set;}   
+
+        public DbSet<TimelineNotes> TimelineNotes { get; set; }     
 
 
 
@@ -154,6 +156,11 @@ namespace API.Data
                     .HasOne(qual => qual.Professional)
                     .WithMany(qual => qual.Qualification)
                     .HasForeignKey(qual => qual.ProfId);
+
+            builder.Entity<TimelineNotes>()
+                    .HasOne(timeNote => timeNote.Professional)
+                    .WithMany(timeNote => timeNote.TimelineNotes )
+                    .HasForeignKey(timeNote => timeNote.ProfessionalId);
                              
 
 
