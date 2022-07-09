@@ -51,7 +51,9 @@ namespace API.Data
         
         public DbSet<Skills> Skills {get; set;}   
 
-        public DbSet<TimelineNotes> TimelineNotes { get; set; }     
+        public DbSet<TimelineNotes> TimelineNotes { get; set; }  
+
+        public DbSet<Payment> Payment{ get; set; }   
 
 
 

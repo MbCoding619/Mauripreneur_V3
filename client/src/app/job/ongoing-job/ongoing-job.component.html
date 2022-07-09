@@ -82,13 +82,20 @@
             <div class="card-header" style="cursor: pointer;">
                 <mat-icon (click)="back()">arrow_back_ios</mat-icon>
             </div>
-            <div class="card-block">
+            <div  class="card-block">
                 <div class="user-image">
                     <img [src]="createImgPath(jobData.profPic)" class="img-radius" alt={{jobData.profFName}}>
                 </div>
                 <h6 style="color:black !important;" class="f-w-600 m-t-25 m-b-10">{{jobData.field.description}}</h6>
                 <p class="text-muted">{{jobData.profFName}} | {{jobData.profLName}}</p>
-                <hr>
+                <hr>    
+                <ng-container   *ngIf="showPayment" >
+                    <button (click)="markAsDone()" mat-button  class="menu-button">
+                        <mat-icon style="color :black !important;" >attach_money</mat-icon>
+                        <span style="color :black !important;" >Mark Project as Done </span>      
+                    </button>
+                </ng-container>
+            
                 <div class="bg-c-blue counter-block m-t-10 p-20">
                     <div class="row">
                         <p>{{jobData.jobDescription}}</p>
@@ -339,7 +346,7 @@
             </tab>
 
 
-            <tab heading="Payment">
+            <tab heading="Messages">
 
                 <div class="container" style="color :black !important;">
                     <h1>Payment Goes here</h1>

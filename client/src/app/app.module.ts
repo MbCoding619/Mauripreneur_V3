@@ -87,6 +87,7 @@ import { PostedJobCardsComponent } from './cards/posted-job-cards/posted-job-car
 import { TestTimelineComponent } from './_tests/test-timeline/test-timeline.component';
 import { OngoingJobComponent } from './job/ongoing-job/ongoing-job.component';
 import { DialogTimelineNotesComponent } from './dialog/dialog-timeline-notes/dialog-timeline-notes.component';
+import { ProjectDoneComponent } from './job/project-done/project-done.component';
 
 
 
@@ -145,6 +146,7 @@ import { DialogTimelineNotesComponent } from './dialog/dialog-timeline-notes/dia
     TestTimelineComponent,
     OngoingJobComponent,
     DialogTimelineNotesComponent,
+    ProjectDoneComponent,
       
   ],
   imports: [

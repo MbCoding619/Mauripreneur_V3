@@ -10,6 +10,8 @@ export interface ongoingJob{
     bidResponse : string;
     bidDate : Date;
     bidOtherDetails :string;
+    bidStatus : string;
+    bidAmount : number;
     profId : string;
     smeId : string;
     timeline : timeline[];

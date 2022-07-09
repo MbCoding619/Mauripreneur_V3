@@ -9,7 +9,9 @@ import { DialogTimelineNotesComponent } from 'src/app/dialog/dialog-timeline-not
 import { ongoingJob } from 'src/app/_models/ongoingJob';
 import { timeline } from 'src/app/_models/timeline';
 import { timelineNotesQuery } from 'src/app/_models/timelineNotesQuery';
+import { AccountsService } from 'src/app/_services/accounts.service';
 import { BidService } from 'src/app/_services/bid.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-ongoing-job',
@@ -33,6 +35,11 @@ export class OngoingJobComponent implements OnInit {
   showTimelineNotes =false;
   updateNote =false;
   notesForm : FormGroup;
+  username :any;
+  testQ:any;
+  testQL:any;
+  showPayment = false;
+  
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatPaginator) sort: MatSort;
@@ -41,20 +48,26 @@ export class OngoingJobComponent implements OnInit {
   constructor(private bidService : BidService,
               private toastr : ToastrService,
               private dialog : MatDialog,
-              private fb : FormBuilder
+              private fb : FormBuilder,
+              private accountService : AccountsService
 ) { 
 
     
   }
 
   ngOnInit(): void {
-    this.getOnGoingJob();    
+    this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
+      this.username = user.username;
+
+    })
+    this.getOnGoingJob();  
+     
   }
 
 
 
   getOnGoingJob(){
-    this.bidService.getOngoingJob("Accepted").subscribe(response =>{
+    this.bidService.getOngoingJob("Accepted","ONGOING",this.username).subscribe(response =>{
       this.dataSource =  new MatTableDataSource(response);
       this.dataSource.paginator = this.paginator;      
     },error =>{
@@ -74,6 +87,7 @@ export class OngoingJobComponent implements OnInit {
     this.bidService.getTimeline(id).subscribe(response =>{
       this.timelineData = response;
       console.log(this.timelineData);
+      this.checkAllTimelineDone(this.timelineData[0].bidId);
       
     })
   }
@@ -90,6 +104,7 @@ export class OngoingJobComponent implements OnInit {
 
   back(){
     this.viewJob = false;
+    this.getOnGoingJob();
   }
 
   back2(){
@@ -105,7 +120,7 @@ export class OngoingJobComponent implements OnInit {
       "timelineId" : timelineId,
       "timelineStatus": status
     }
-    console.log("Wa");
+    //console.log("Wa");
 
     this.bidService.setTimelineStatus(this.modelT).subscribe(
       response =>{
@@ -198,6 +213,36 @@ export class OngoingJobComponent implements OnInit {
       data: row,
 
     });
+  }
+
+  checkAllTimelineDone(bidId:any){
+    this.bidService.checkTimelineDone(bidId).subscribe(response =>{
+      this.testQ = response;
+      this.testQL = Object.keys(this.testQ).length;
+      if(this.testQ[0].tmStatus ==="DONE" && this.testQL ===1){
+        this.showPayment = true;
+        console.log(this.showPayment);
+      }
+      
+     // console.log(this.testQ[0].tmStatus);
+      //console.log(this.testQL);
+    })
+  }
+
+  markAsDone(){
+    let model ={
+      "bidId" : this.jobData?.bidId
+    }
+    this.bidService.markProjectAsDone(model).subscribe(
+      response =>{
+        if(response){
+          this.toastr.success(response.status);
+        }
+      },error=>{
+        this.toastr.error("Something went wrong");
+      }
+    )
+    //console.log(model);
   }
 
 }

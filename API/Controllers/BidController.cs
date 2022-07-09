@@ -12,6 +12,8 @@ using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Stripe;
 
 namespace API.Controllers
 {
@@ -21,8 +23,10 @@ namespace API.Controllers
         private readonly IMapper _mapper;
         private readonly DataContext _context;
         private readonly IUserRepository _userRepository;
-        public BidController(DataContext context, IMapper mapper, IBidRepository bidRepository, IUserRepository userRepository)
+        private readonly IConfiguration _config;
+        public BidController(DataContext context, IMapper mapper, IBidRepository bidRepository, IUserRepository userRepository, IConfiguration config)
         {
+            _config = config;
             _userRepository = userRepository;
             _context = context;
             _mapper = mapper;
@@ -175,6 +179,7 @@ namespace API.Controllers
                 {
 
                     bid.BidResponse = "Accepted";
+                    bid.bidStatus ="ONGOING";
                     bid.SmeId = sme.Id;
                     _bidRepository.Update(bid);
 
@@ -680,6 +685,73 @@ namespace API.Controllers
             return Ok(count);
         }
 
+          [HttpPut("markProjectDone")]
+
+        public async Task<ActionResult<ActionStatusDTO>> markProjectDone(MarkProjectDTO markProjectDTO)
+        {
+            var bid = await _context.Bid.FindAsync(markProjectDTO.BidId);
+            if (bid != null)
+            {   
+                bid.bidStatus = "DONE";                
+                _context.Entry(bid).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                return new ActionStatusDTO
+                {
+                    status ="Project Marked as Done"
+                };
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+
+        
+
+
+        [HttpPost("addPayment")]
+        public async Task<ActionResult<ActionStatusDTO>> addPayment(PaymentBidDTO paymentBidDTO)
+        {
+            
+            var bid = await _bidRepository.GetBidByIdAsync(paymentBidDTO.BidId);
+            StripeConfiguration.ApiKey = _config["StripeSettings:SecretKey"];
+
+            var stripeService = new PaymentIntentService();
+            PaymentIntent intent;
+            if(bid !=null)
+            {
+                var options = new PaymentIntentCreateOptions
+                {
+                    Amount = (long)bid.BidAmount,
+                    Currency = "usd",
+                    PaymentMethodTypes = new List<string>{"card"}
+                };
+                intent = await stripeService.CreateAsync(options);
+                
+                var payment = new Payment
+                {
+                    BidId = bid.Id,
+                    Amount = (int)bid.BidAmount,
+                    PaymentIntentId = intent.Id,
+                    nameOnCard = paymentBidDTO.nameOnCard,
+                    ClientSecret = intent.ClientSecret,
+                    PaymentStatus = "Paid"
+                };
+
+                _context.Payment.Add(payment);
+                await _context.SaveChangesAsync();
+                return new ActionStatusDTO
+                {
+                    status = intent.ClientSecret
+                };
+            }else
+            {
+                return BadRequest();
+            }
+            
+        }
+
 
 
         [HttpGet("getBidProfByJobId/{jobId}/{bidResponse}")]
@@ -863,9 +935,9 @@ namespace API.Controllers
             return Ok(query);
         }
 
-        [HttpGet("getJobBidProfByBidResponse/{bidResponse}/{username}")]
+        [HttpGet("getJobBidProfByBidResponse/{bidResponse}/{bidStatus}/{username}")]
 
-        public IActionResult getJobBidProfMeetBySmeId(string bidResponse, string username)
+        public IActionResult getJobBidProfMeetBySmeId(string bidResponse,string bidStatus, string username)
         {
 
             // var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
@@ -885,6 +957,7 @@ namespace API.Controllers
                                 BidResponse = bid.BidResponse,
                                 BidDate = bid.BidDate,
                                 BidOtherDetails = bid.OtherDetails,
+                                BidStatus = bid.bidStatus,
                                 ProfId = bid.ProfessionalId,
                                 SmeId = job.SmeId,
                                 user = job.Sme.User,
@@ -905,6 +978,7 @@ namespace API.Controllers
                                 BidResponse = bid.BidResponse,
                                 BidDate = bid.BidDate,
                                 BidOtherDetails = bid.BidOtherDetails,
+                                BidStatus = bid.BidStatus,
                                 ProfId = bid.ProfId,
                                 SmeId = bid.SmeId,
                                 user = bid.user,
@@ -930,6 +1004,7 @@ namespace API.Controllers
                                 BidResponse = prof.BidResponse,
                                 BidDate = prof.BidDate,
                                 BidOtherDetails = prof.BidOtherDetails,
+                                BidStatus = prof.BidStatus,
                                 ProfId = prof.ProfId,
                                 SmeId = prof.SmeId,
                                 user = prof.user,
@@ -941,7 +1016,8 @@ namespace API.Controllers
                                 Field = prof.field
                             }
                         ).Where(bd => bd.user.UserName == username.ToLower())
-                        .Where(bd => bd.BidResponse == bidResponse).ToList();
+                        .Where(bd => bd.BidResponse == bidResponse).
+                        Where(bd=>bd.BidStatus == bidStatus).ToList();
 
 
             return Ok(query);

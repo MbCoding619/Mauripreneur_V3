@@ -31,6 +31,8 @@ namespace API.Entities
 
         public string bidNotes { get; set; }
 
+        public string bidStatus { get; set; }
+
         public int JobId { get; set; }
 
         public Job Job { get; set; }
@@ -43,6 +45,8 @@ namespace API.Entities
         public int? SmeId { get; set; }
 
         public Sme Sme { get; set; }    
+
+        public Payment Payment { get; set; }
 
         public ICollection<Meeting> Meeting { get; set; }
         public ICollection<Timeline> Timeline { get; set; }

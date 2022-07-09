@@ -33,6 +33,7 @@ namespace API.Extensions
             services.AddScoped<ISkillsRepository,SkillsRepository>();
             services.AddScoped<IQualRepository,QualiRepository>();
             services.AddScoped<IExperienceRepository,ExperienceRepository>();
+            services.AddScoped<IPaymentRepository,PaymentRepository>();
            
 
             

@@ -18,6 +18,7 @@ import { AllJobPostedComponent } from './job/all-job-posted/all-job-posted.compo
 import { JobPostedComponent } from './job/job-posted/job-posted.component';
 import { OngoingJobComponent } from './job/ongoing-job/ongoing-job.component';
 import { PostJobComponent } from './job/post-job/post-job.component';
+import { ProjectDoneComponent } from './job/project-done/project-done.component';
 import { MemberListComponent } from './members/member-list/member-list.component';
 import { UserMainProfileComponent } from './Profile/user-main-profile/user-main-profile.component';
 import { UserProfileComponent } from './Profile/user-profile/user-profile.component';
@@ -42,6 +43,7 @@ const routes: Routes = [
   {path:'Job/JobPosted',component: JobPostedComponent},
   {path:'Job/AllJob',component: AllJobPostedComponent},
   {path:'Job/OngoingJob',component: OngoingJobComponent},
+  {path:'Job/ProjectDone',component: ProjectDoneComponent},
   {path:'Calendar/ViewCalendar',component: CalendarViewComponent},
   {path:'User/UserProfile',component: UserProfileComponent},
   {path:'User/UserMainProfile',component: UserMainProfileComponent},
